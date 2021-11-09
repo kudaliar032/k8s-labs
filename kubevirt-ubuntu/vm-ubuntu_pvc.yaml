@@ -1,0 +1,45 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  generation: 1
+  labels:
+    kubevirt.io/os: linux
+  name: vm-ubuntu
+spec:
+  running: true
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        kubevirt.io/domain: vm-ubuntu
+    spec:
+      domain:
+        cpu:
+          cores: 1
+        devices:
+          disks:
+          - disk:
+              bus: virtio
+            name: disk0
+          - cdrom:
+              bus: sata
+              readonly: true
+            name: cloudinitdisk
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 1024M
+      volumes:
+      - name: disk0
+        persistentVolumeClaim:
+          claimName: ubuntu
+      - cloudInitNoCloud:
+          userData: |
+            #cloud-config
+            hostname: vm-ubuntu
+            ssh_pwauth: True
+            disable_root: false
+            ssh_authorized_keys:
+            - YOUR_SSH_PUBLIC_KEY
+        name: cloudinitdisk
